@@ -36,6 +36,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## Log
+LOG_DIR="${HOME}/logs"
+[ -d "${LOG_DIR}" ] || mkdir ${LOG_DIR}
+LOG_FILE="protonvpn-phosh-service.log"
+echo "$(date +'%Y-%m-%d %H:%M:%S') Executing droidian-berb-fix-appstreamcli-apt-glib-stdout..." | tee -a "${LOG_DIR}/${LOG_FILE}"
+
 ## Load user config
 protonvpn_config_file="$HOME/.config/proton-me/protonvpn-phosh-service.conf"
 [ -e "${protonvpn_config_file}" ] || echo "Missing ${protonvpn_config_file}"
