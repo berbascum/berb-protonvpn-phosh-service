@@ -133,20 +133,20 @@ con_proton_up() {
     ## Check for internet connection
     connected_inet="false"
     while [ "$connected_inet" != "true" ]; do
-        echo && echo "Waiting for inet connection..."
+        echo && echo "Waiting for inet connection..." | tee -a ${LOG_DIR}/${LOG_FILE}
         ping -c 1 8.8.8.8 > /dev/null 2>&1 \
             && connected_inet="true"
         sleep 5
     done
-    echo && echo "Internet cnnection detected!"
+    echo && echo "Internet cnnection detected!" | tee -a ${LOG_DIR}/${LOG_FILE}
     ## Start connection
-    echo && echo "Starting ProtonVPN connection ..."
+    echo && echo "Starting ProtonVPN connection ..." | tee -a ${LOG_DIR}/${LOG_FILE}
     nmcli connection up "${VPN_CON_NAME}"
     sleep 5
 
     connected_vpn="false"
     while [ "$connected_vpn" != "true" ]; do
-        echo && echo "Waiting for vpn connection..."
+        echo && echo "Waiting for vpn connection..." | tee -a ${LOG_DIR}/${LOG_FILE}
         ## Check proton conection
         con_proton_check
         [ "${con_state}" == "activated" ] \
@@ -154,7 +154,7 @@ con_proton_up() {
         sleep 5
     done
     ## Apply iptables rules
-    echo && echo "Applying itables rules..."
+    echo && echo "Applying itables rules..." | tee -a ${LOG_DIR}/${LOG_FILE}
     sudo /usr/sbin/firewall-droidian-berb-proton.sh
 }
 
