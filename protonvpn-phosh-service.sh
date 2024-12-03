@@ -36,9 +36,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 ## Load user config
-source $HOME/.config/proton-me/protonvpn-phosh-service.conf
+protonvpn_config_file="$HOME/.config/proton-me/protonvpn-phosh-service.conf"
+[ -e "${protonvpn_config_file}" ] || echo "Missing ${protonvpn_config_file}"
+source ${protonvpn_config_file}
 
 ## NM /Connections dir:
 #/etc/NetworkManager/system-connections/protonvpn.tcp-1.nmconnection 
