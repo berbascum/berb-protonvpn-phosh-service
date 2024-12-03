@@ -58,20 +58,27 @@ source ${protonvpn_config_file}
 ###############
 
 con_proton_check() {
+    unset con_is_active con_dbus_path con_state con_type con_vpn_type
     con_found=$(nmcli con show \
         | grep ${VPN_CON_NAME})
-    [ -z "${con_found}" ] \
-        && echo "Connection not previously exist" \
-        && return
+    [ -z "${con_found}" ] && return
+        #&& echo "Connection not previously exist" \
+        #&& return
+    con_is_active=$(nmcli connection show --active \
+        | grep -c "^${VPN_CON_NAME} ")
+    [ "${con_is_active}" -eq "0" ] && return
+    con_dbus_path="$(nmcli -t -f GENERAL.DBUS-PATH \
+        connection show ${VPN_CON_NAME} \
+        | awk -F':' '{print $2}')"
+    con_state=$(nmcli con show ${VPN_CON_NAME} \
+        | grep '^GENERAL.STATE' \
+        | awk '{print $2}')
     con_type=$(nmcli con show ${VPN_CON_NAME} \
         | grep '^connection.type:' \
         | awk '{print $2}')
     con_vpn_type=$(nmcli con show ${VPN_CON_NAME} \
         | grep '^vpn.service-type' \
         | awk -F'.' '{print $NF}')
-    con_state=$(nmcli con show ${VPN_CON_NAME} \
-        | grep '^GENERAL.STATE' \
-        | awk '{print $2}')
 }
 
 con_proton_import() {
