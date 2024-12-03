@@ -1,0 +1,12 @@
+[Unit]
+Description=ProtonVPN connection monitor
+After=NetworkManager.service
+Wants=NetworkManager.service
+
+[Service]
+#ExecStartPre=sleep 5
+ExecStart=/usr/bin/protonvpn-phosh-mgr monitor
+Restart=on-failure
+
+[Install]
+WantedBy=phosh.service
