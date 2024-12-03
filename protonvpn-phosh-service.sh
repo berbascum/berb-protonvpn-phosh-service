@@ -136,13 +136,13 @@ con_proton_up() {
         echo && echo "Waiting for inet connection..." | tee -a ${LOG_DIR}/${LOG_FILE}
         ping -c 1 8.8.8.8 > /dev/null 2>&1 \
             && connected_inet="true"
-        sleep 5
+        sleep 3
     done
     echo && echo "Internet cnnection detected!" | tee -a ${LOG_DIR}/${LOG_FILE}
     ## Start connection
     echo && echo "Starting ProtonVPN connection ..." | tee -a ${LOG_DIR}/${LOG_FILE}
     nmcli connection up "${VPN_CON_NAME}"
-    sleep 5
+    sleep 3
 
     connected_vpn="false"
     while [ "$connected_vpn" != "true" ]; do
@@ -151,7 +151,7 @@ con_proton_up() {
         con_proton_check
         [ "${con_state}" == "activated" ] \
             && connected_vpn="true"
-        sleep 5
+        sleep 3
     done
     ## Apply iptables rules
     echo && echo "Applying itables rules..." | tee -a ${LOG_DIR}/${LOG_FILE}
