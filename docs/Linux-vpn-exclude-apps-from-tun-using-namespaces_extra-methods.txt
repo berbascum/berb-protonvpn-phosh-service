@@ -1,0 +1,29 @@
+Linux VPN Exclude Apps
+To exclude specific applications from using a VPN connection on Linux, you can employ various methods. Here are a few approaches:
+
+1- Network Namespaces: Create a network namespace for the VPN connection and run the excluded applications within a separate namespace. This way, they won’t inherit the VPN configuration. You can use tools like ip netns and openvpn to achieve this.
+Example:
+
+ip netns add myvpn
+ip link set tun0 netns myvpn
+openvpn --config vpn_config.ovpn --namespace myvpn
+
+Proxying: Set up a proxy server (e.g., squid or privoxy) and configure the excluded applications to use this proxy. The VPN connection will only be used for traffic that doesn’t go through the proxy.
+Example:
+
+sudo apt-get install squid
+sudo squid -f /etc/squid/squid.conf
+
+3- Routing: Use iptables and ip route to create custom routing tables and rules for the excluded applications. This approach requires more manual configuration but provides fine-grained control.
+Example:
+
+iptables -t mangle -A OUTPUT -p tcp --dport 80 -j MARK --set-x 0x1
+ip route add default via <original_gateway> dev <original_interface> table 1
+
+3- VPN Client Configuration: Some VPN clients, like OpenVPN, allow you to specify excluded IP addresses or CIDR ranges. Check your VPN client’s documentation for this feature.
+Example (OpenVPN):
+
+route-exclude 192.168.1.0/24
+
+4- Qomui: The Qomui app (mentioned in one of the search results) provides an option to bypass the VPN tunnel based on the approach from Server Fault. This method is more complex and requires setting up a container (e.g., Docker or LXD) with a proxy and configuring the excluded applications to use this proxy.
+Remember to consult your VPN client’s documentation and Linux distribution’s specific guidelines for implementing these methods. Additionally, ensure that your system’s firewall and network configuration allow the excluded applications to function as intended.

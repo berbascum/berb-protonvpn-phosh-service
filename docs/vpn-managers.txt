@@ -1,0 +1,1 @@
+qomui: has advanced features for splitting
