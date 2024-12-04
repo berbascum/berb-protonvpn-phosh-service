@@ -5,8 +5,8 @@ Wants=NetworkManager.service
 
 [Service]
 #ExecStartPre=sleep 5
-ExecStart=/usr/bin/protonvpn-phosh-mgr monitor
+ExecStart=/usr/bin/protonvpn-phosh-service monitor
 Restart=on-failure
 
 [Install]
-WantedBy=phosh.service
+WantedBy=default.target

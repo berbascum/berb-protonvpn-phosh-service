@@ -40,7 +40,7 @@
 LOG_DIR="${HOME}/logs"
 [ -d "${LOG_DIR}" ] || mkdir ${LOG_DIR}
 LOG_FILE="protonvpn-phosh-service.log"
-echo "$(date +'%Y-%m-%d %H:%M:%S') Executing droidian-berb-fix-appstreamcli-apt-glib-stdout..." | tee -a "${LOG_DIR}/${LOG_FILE}"
+echo "$(date +'%Y-%m-%d %H:%M:%S') Executing protonvpn-phosh-service..." | tee "${LOG_DIR}/${LOG_FILE}"
 
 ## Load user config
 protonvpn_config_file="$HOME/.config/proton-me/protonvpn-phosh-service.conf"
@@ -119,26 +119,29 @@ con_proton_import() {
         vpn.secrets "password=$(cat ${VPN_P_FILE})"
 }
 
-
 ## Connect to protonvpn
 con_proton_up() {
     ## Check proton conection
     con_proton_check
     ## Con exist
-    [ -z "${con_found}" ] \
-        && echo "Connection not exist" && exit 1
-    ## Con status
-    [ "${con_state}" == "activated" ] \
-        && echo "Connection already up" && exit 1
+    if [ -z "${con_found}" ]; then
+        echo "Connection \"${VPN_CON_NAME}\" not exist" | tee -a ${LOG_DIR}/${LOG_FILE}
+        exit 1
+    fi
+    ## Con is active
+    if [ "${con_is_active}" -eq "1" ]; then
+        echo "Connection \"${VPN_CON_NAME}\" already up" | tee -a ${LOG_DIR}/${LOG_FILE}
+        return
+    fi
     ## Check for internet connection
     connected_inet="false"
     while [ "$connected_inet" != "true" ]; do
-        echo && echo "Waiting for inet connection..." | tee -a ${LOG_DIR}/${LOG_FILE}
+        echo "Waiting for inet connection..." | tee -a ${LOG_DIR}/${LOG_FILE}
         ping -c 1 8.8.8.8 > /dev/null 2>&1 \
             && connected_inet="true"
         sleep 3
     done
-    echo && echo "Internet cnnection detected!" | tee -a ${LOG_DIR}/${LOG_FILE}
+    echo && echo "Internet conection detected!" | tee -a ${LOG_DIR}/${LOG_FILE}
     ## Start connection
     echo && echo "Starting ProtonVPN connection ..." | tee -a ${LOG_DIR}/${LOG_FILE}
     nmcli connection up "${VPN_CON_NAME}"
@@ -158,6 +161,28 @@ con_proton_up() {
     sudo /usr/sbin/firewall-droidian-berb-proton.sh
 }
 
+con_dbus_monitor() {
+    ## Monitor for connection down
+    dbus-monitor --system "path='${con_dbus_path}', interface='org.freedesktop.NetworkManager.Connection.Active', member='StateChanged'" | \
+    awk '/uint32 2/ { print "Connection down, stopping dbus-monitor"; system("kill $(ps -e | grep dbus-monitor | awk '\''{print $1}'\'')"); exit }'
+    echo "$(date +'%Y-%m-%d %H:%M:%S') - Conection down finishing dbus monitor..." >> ${LOG_DIR}/${LOG_FILE}
+    sudo /usr/sbin/firewall-droidian-berb-proton-minimal.sh
+}
+
+con_proton_monitor() {
+    ## Call connection up which checks the connection
+    ## If not exist, exit script
+    ## If active, return
+    ## if not active, connect
+    ## The con_proton_check is executed again at the
+    ## end of con_proton_up
+    con_proton_up
+    ## Monitor connection with dbus
+    con_dbus_monitor
+    echo "Connection goes down. Reconnecting..." | tee -a ${LOG_DIR}/${LOG_FILE}
+    con_proton_monitor
+}
+
 action_required() {
     echo ""
     echo "An action is required:"
@@ -169,6 +194,8 @@ if [ "$1" == "import" ]; then
     con_proton_import
 elif [ "$1" == "up" ]; then
     con_proton_up
+elif [ "$1" == "monitor" ]; then
+    con_proton_monitor
 else
     action_required
 fi
