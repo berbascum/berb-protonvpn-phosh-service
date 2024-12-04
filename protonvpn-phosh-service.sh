@@ -121,7 +121,7 @@ con_proton_import() {
 
 ## Connect to protonvpn
 con_proton_up() {
-    ## Check proton conection
+    ## Check proton connection
     con_proton_check
     ## Con exist
     if [ -z "${con_found}" ]; then
@@ -141,7 +141,7 @@ con_proton_up() {
             && connected_inet="true"
         sleep 3
     done
-    echo && echo "Internet conection detected!" | tee -a ${LOG_DIR}/${LOG_FILE}
+    echo && echo "Internet connection detected!" | tee -a ${LOG_DIR}/${LOG_FILE}
     ## Start connection
     echo && echo "Starting ProtonVPN connection ..." | tee -a ${LOG_DIR}/${LOG_FILE}
     nmcli connection up "${VPN_CON_NAME}"
@@ -150,7 +150,7 @@ con_proton_up() {
     connected_vpn="false"
     while [ "$connected_vpn" != "true" ]; do
         echo && echo "Waiting for vpn connection..." | tee -a ${LOG_DIR}/${LOG_FILE}
-        ## Check proton conection
+        ## Check proton connection
         con_proton_check
         [ "${con_state}" == "activated" ] \
             && connected_vpn="true"
