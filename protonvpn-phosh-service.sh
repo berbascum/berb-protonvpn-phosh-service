@@ -169,6 +169,31 @@ con_dbus_monitor() {
     sudo /usr/sbin/firewall-droidian-berb-proton-minimal.sh
 }
 
+con_tun_monitor() {
+    vpn_tun_devs_num="$(ip link show | grep -c -o 'tun[0-9]\+')"
+    if [ "${vpn_tun_devs_num}" -ne "1" ]; then
+        echo "More than one tun detected!"
+        exit 1
+    fi
+
+    vpn_tun_con_dev="$(ip link show | grep -o 'tun[0-9]\+')"
+    dir_to_check="/sys/devices/virtual/net/${vpn_tun_con_dev}"
+
+    ## Monitor the tun sys dir
+    echo "Start \"${vpn_tun_con_dev}\" monitoring..."
+
+    finish="false"
+    while [ "${finish}" == "false" ]; do
+        if [ ! -e "${dir_to_check}" ]; then
+            finish="true"
+            break
+        fi
+        sleep 0.5
+    done
+    echo "$(date +'%Y-%m-%d %H:%M:%S') - Device \"${vpn_tun_con_dev}\" lost: finishing tun monitor..." | tee -a ${LOG_DIR}/${LOG_FILE}
+    sudo /usr/sbin/firewall-droidian-berb-proton-minimal.sh
+}
+
 con_proton_monitor() {
     ## Call connection up which checks the connection
     ## If not exist, exit script
@@ -178,7 +203,8 @@ con_proton_monitor() {
     ## end of con_proton_up
     con_proton_up
     ## Monitor connection with dbus
-    con_dbus_monitor
+#    con_dbus_monitor
+    con_tun_monitor
     echo "Connection goes down. Reconnecting..." | tee -a ${LOG_DIR}/${LOG_FILE}
     con_proton_monitor
 }
